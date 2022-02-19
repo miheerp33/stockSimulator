@@ -2,6 +2,7 @@ import yfinance
 import plotly
 import plotly.graph_objects as graphobjects
 import PySimpleGUI as sg
+import transactions
 #desiredTicker = input('Desired ticker: ')
 #desiredTime = input('Desired time periiod: ')
 
@@ -15,9 +16,11 @@ sg.theme('BluePurple')
 
 layout = [[sg.Text('Insert ticker below.')],
           [sg.Input(key='-IN-'), sg.Listbox( values=timeValues, key='time',
-                                                                      select_mode='LISTBOX_SELECT_MODE_SINGLE')],
+                                                                      select_mode='LISTBOX_SELECT_MODE_SINGLE',
+                                             default_values='1mo')],
           [sg.Button('Search'), sg.Button('Exit')],
-          [sg.Text('Stock info: '), sg.Text(size=(20,1), key='OUTPUT')]]
+          [sg.Text('Stock info: '), sg.Text(size=(20,1), key='OUTPUT')],
+          [sg.Input(key='purchaseAmount')], [sg.Button('Purchase')],[sg.Text(size=(20,1), key=('ownedStocks'))]]
 
 window = sg.Window('Pattern 2B', layout)
 
@@ -41,7 +44,14 @@ while True:  # Event Loop
         figure.update_traces(marker=dict(color='red'))
         plotly.offline.plot(figure)
         window['OUTPUT'].update(todays_data['Close'][0])
+
         # Update the "output" text element to be the value of "input" element
+    if event == 'Purchase':
+        desiredTicker = values['-IN-']
+        purchaseAmount = values['purchaseAmount']
+        transactions.addTransaction(desiredTicker, purchaseAmount)
+
+
 
 
 window.close()
