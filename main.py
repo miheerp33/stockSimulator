@@ -3,7 +3,7 @@ import plotly
 import plotly.graph_objects as graphobjects
 import PySimpleGUI as sg
 
-
+import moneyTracker
 import transactions
 import sqlite3
 
@@ -12,7 +12,7 @@ import sqlite3
 
 con = sqlite3.connect('transactionHistory.db')
 cur = con.cursor()
-#cur.execute("CREATE TABLE IF NOT EXISTS history (id AutoNumber, stockTicker varchar, stocksOwned DOUBLE, purchasePrice DOUBLE)")
+cur.execute("CREATE TABLE IF NOT EXISTS history (id AutoNumber, stockTicker varchar, stocksOwned DOUBLE, purchasePrice DOUBLE)")
 
 
 timeValues = ['1d', '1w', '1mo', '1y']
@@ -31,7 +31,9 @@ layout = [[sg.Text('Insert ticker below.', key='bank')],
           [sg.Button('Sell', key="-SELL-")]]
 
 window = sg.Window('Pattern 2B', layout)
-total_bank = 10000
+
+
+total_bank = moneyTracker.moneyChecker()
 while True:  # Event Loop
     event, values = window.read()
     print(event, values)
@@ -58,16 +60,19 @@ while True:  # Event Loop
         desiredTicker = values['-IN-']
         purchaseAmount = values['purchaseAmount']
         transactions.addTransaction(desiredTicker, purchaseAmount)
-        total_bank = total_bank - float(purchaseAmount)
+        total_bank = float(total_bank) - float(purchaseAmount)
         if total_bank < 0:
             window['bank'].update(str(total_bank) + '!!! IN DEBT !!!')
+            moneyTracker.moneyUpdater(total_bank)
         else:
             window['bank'].update(total_bank)
+            moneyTracker.moneyUpdater(total_bank)
+
     if event == '-SELL-':
         desiredTicker = values['-IN-']
-        total_bank = total_bank + transactions.sell_stock(desiredTicker)
+        total_bank = moneyTracker.moneyChecker() + transactions.sell_stock(desiredTicker)
         window['bank'].update(total_bank)
-
+        moneyTracker.moneyUpdater(total_bank)
 
 
 
